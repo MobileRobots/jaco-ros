@@ -102,17 +102,20 @@
   <property name="link_end_effector"   value="jaco2_end_effector" />
   <property name="end_effector_offset" value="0.1687" />
 
-  <xacro:macro name="jaco2_arm" params="parent">
-    <xacro:jaco_struct parent="${parent}" basename="jaco2"/>
+  <xacro:macro name="jaco2_arm" params="parent prefix"> <!-- can maybe give a
+default value for prefix parameter post-indigo like this: prefix:="" -->
+    <xacro:jaco_struct parent="${parent}" prefix="${prefix}"/>
 
-    <xacro:jaco_link link_name="${link_finger_1}"/>
-    <xacro:jaco_finger_joint joint_name="${joint_finger_1}" type="revolute" parent="${link_hand}" child="${link_finger_1}" joint_axis_xyz="${joint_finger_1_axis_xyz}" joint_origin_xyz="${joint_finger_1_origin_xyz}" joint_origin_rpy="${joint_finger_1_origin_rpy}" lower_limit="${joint_finger_1_lower_limit}" upper_limit="${joint_finger_1_upper_limit}"/>
+    <xacro:jaco_link link_name="${prefix}${link_finger_1}" mesh_name="${link_finger_1}" />
+    <xacro:jaco_finger_joint joint_name="${prefix}${joint_finger_1}"
+type="revolute" parent="${prefix}${link_hand}" child="${prefix}${link_finger_1}" joint_axis_xyz="${joint_finger_1_axis_xyz}" joint_origin_xyz="${joint_finger_1_origin_xyz}" joint_origin_rpy="${joint_finger_1_origin_rpy}" lower_limit="${joint_finger_1_lower_limit}" upper_limit="${joint_finger_1_upper_limit}"/>
 
-    <xacro:jaco_link link_name="${link_finger_2}"/>
-    <xacro:jaco_finger_joint joint_name="${joint_finger_2}" type="revolute" parent="${link_hand}" child="${link_finger_2}" joint_axis_xyz="${joint_finger_2_axis_xyz}" joint_origin_xyz="${joint_finger_2_origin_xyz}" joint_origin_rpy="${joint_finger_2_origin_rpy}" lower_limit="${joint_finger_2_lower_limit}" upper_limit="${joint_finger_2_upper_limit}"/>
+    <xacro:jaco_link link_name="${prefix}${link_finger_2}" mesh_name="${link_finger_2}" />
+    <xacro:jaco_finger_joint joint_name="${prefix}${joint_finger_2}" type="revolute" parent="${prefix}${link_hand}" child="${prefix}${link_finger_2}" joint_axis_xyz="${joint_finger_2_axis_xyz}" joint_origin_xyz="${joint_finger_2_origin_xyz}" joint_origin_rpy="${joint_finger_2_origin_rpy}" lower_limit="${joint_finger_2_lower_limit}" upper_limit="${joint_finger_2_upper_limit}"/>
 
-    <xacro:jaco_link link_name="${link_finger_3}"/>
-    <xacro:jaco_finger_joint joint_name="${joint_finger_3}" type="revolute" parent="${link_hand}" child="${link_finger_3}" joint_axis_xyz="${joint_finger_3_axis_xyz}" joint_origin_xyz="${joint_finger_3_origin_xyz}" joint_origin_rpy="${joint_finger_3_origin_rpy}" lower_limit="${joint_finger_3_lower_limit}" upper_limit="${joint_finger_3_upper_limit}"/>
+    <xacro:jaco_link link_name="${prefix}${link_finger_3}" mesh_name="${link_finger_3}" />
+    <xacro:jaco_finger_joint joint_name="${prefix}${joint_finger_3}" type="revolute"
+parent="${prefix}${link_hand}" child="${prefix}${link_finger_3}" joint_axis_xyz="${joint_finger_3_axis_xyz}" joint_origin_xyz="${joint_finger_3_origin_xyz}" joint_origin_rpy="${joint_finger_3_origin_rpy}" lower_limit="${joint_finger_3_lower_limit}" upper_limit="${joint_finger_3_upper_limit}"/>
   </xacro:macro>
 
 

@@ -33,6 +33,6 @@
       </collision>     
     </link>
 
-<xacro:jaco2_arm  parent="root"/>
+<xacro:jaco2_arm  parent="root" prefix="" />
 
 </robot>

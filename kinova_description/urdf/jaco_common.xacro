@@ -18,12 +18,12 @@
 
     <property name="J_PI" value="3.1415926535897931" />
 
-    <xacro:macro name="jaco_link" params="link_name">
+    <xacro:macro name="jaco_link" params="link_name mesh_name">
         <link name="${link_name}">
             <visual>
                 <geometry>
                     <mesh
-                        filename="package://kinova_description/meshes/${link_name}.dae"/>
+                        filename="package://kinova_description/meshes/${mesh_name}.dae"/>
                 </geometry>
                 <material name="carbon_fiber">
                     <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -32,7 +32,7 @@
             <collision>
                 <geometry>
                     <mesh
-                        filename="package://kinova_description/meshes/${link_name}.dae"/>
+                        filename="package://kinova_description/meshes/${mesh_name}.dae"/>
                 </geometry>
             </collision>
         </link>
@@ -58,28 +58,35 @@
      </joint>
     </xacro:macro>
 
-    <xacro:macro name="jaco_struct" params="parent basename">
-        <xacro:jaco_link link_name="${link_base}"/>
-        <xacro:jaco_joint joint_name="${joint_base}" type="fixed" parent="${parent}" child="${link_base}" joint_axis_xyz="${joint_base_axis_xyz}" joint_origin_xyz="${joint_base_origin_xyz}" joint_origin_rpy="${joint_base_origin_rpy}" joint_lower_limit="0" joint_upper_limit="0"/>
-        <xacro:jaco_link link_name="${link_1}"/>
-        <xacro:jaco_joint joint_name="${joint_1}" type="continuous" parent="${link_base}" child="${link_1}" joint_axis_xyz="${joint_1_axis_xyz}" joint_origin_xyz="${joint_1_origin_xyz}" joint_origin_rpy="${joint_1_origin_rpy}" joint_lower_limit="${joint_1_lower_limit}" joint_upper_limit="${joint_1_upper_limit}"/>
-        <xacro:jaco_link link_name="${link_2}"/>
-        <xacro:jaco_joint joint_name="${joint_2}" type="revolute" parent="${link_1}" child="${link_2}" joint_axis_xyz="${joint_2_axis_xyz}" joint_origin_xyz="${joint_2_origin_xyz}" joint_origin_rpy="${joint_2_origin_rpy}" joint_lower_limit="${joint_2_lower_limit}" joint_upper_limit="${joint_2_upper_limit}"/>
-        <xacro:jaco_link link_name="${link_3}"/>
-        <xacro:jaco_joint joint_name="${joint_3}" type="revolute" parent="${link_2}" child="${link_3}" joint_axis_xyz="${joint_3_axis_xyz}" joint_origin_xyz="${joint_3_origin_xyz}" joint_origin_rpy="${joint_3_origin_rpy}" joint_lower_limit="${joint_3_lower_limit}" joint_upper_limit="${joint_3_upper_limit}"/>
-        <xacro:jaco_link link_name="${link_4}"/>
-        <xacro:jaco_joint joint_name="${joint_4}" type="continuous" parent="${link_3}" child="${link_4}" joint_axis_xyz="${joint_4_axis_xyz}" joint_origin_xyz="${joint_4_origin_xyz}" joint_origin_rpy="${joint_4_origin_rpy}" joint_lower_limit="${joint_4_lower_limit}" joint_upper_limit="${joint_4_upper_limit}"/>
-        <xacro:jaco_link link_name="${link_5}"/>
-        <xacro:jaco_joint joint_name="${joint_5}" type="continuous" parent="${link_4}" child="${link_5}" joint_axis_xyz="${joint_5_axis_xyz}" joint_origin_xyz="${joint_5_origin_xyz}" joint_origin_rpy="${joint_5_origin_rpy}" joint_lower_limit="${joint_5_lower_limit}" joint_upper_limit="${joint_5_upper_limit}"/>
-        <xacro:jaco_link link_name="${link_hand}" />
-        <xacro:jaco_joint joint_name="${joint_6}" type="continuous" parent="${link_5}" child="${link_hand}" joint_axis_xyz="${joint_6_axis_xyz}" joint_origin_xyz="${joint_6_origin_xyz}" joint_origin_rpy="${joint_6_origin_rpy}" joint_lower_limit="${joint_6_lower_limit}" joint_upper_limit="${joint_6_upper_limit}"/>
+    <xacro:macro name="jaco_struct" params="parent prefix">
+        <xacro:jaco_link link_name="${prefix}${link_base}" mesh_name="${link_base}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_base}" type="fixed"
+parent="${parent}" child="${prefix}${link_base}" joint_axis_xyz="${joint_base_axis_xyz}" joint_origin_xyz="${joint_base_origin_xyz}" joint_origin_rpy="${joint_base_origin_rpy}" joint_lower_limit="0" joint_upper_limit="0"/>
+        <xacro:jaco_link link_name="${prefix}${link_1}" mesh_name="${link_1}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_1}" type="continuous"
+parent="${prefix}${link_base}" child="${prefix}${link_1}" joint_axis_xyz="${joint_1_axis_xyz}" joint_origin_xyz="${joint_1_origin_xyz}" joint_origin_rpy="${joint_1_origin_rpy}" joint_lower_limit="${joint_1_lower_limit}" joint_upper_limit="${joint_1_upper_limit}"/>
+        <xacro:jaco_link link_name="${prefix}${link_2}" mesh_name="${link_2}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_2}" type="revolute"
+parent="${prefix}${link_1}" child="${prefix}${link_2}" joint_axis_xyz="${joint_2_axis_xyz}" joint_origin_xyz="${joint_2_origin_xyz}" joint_origin_rpy="${joint_2_origin_rpy}" joint_lower_limit="${joint_2_lower_limit}" joint_upper_limit="${joint_2_upper_limit}"/>
+        <xacro:jaco_link link_name="${prefix}${link_3}" mesh_name="${link_3}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_3}" type="revolute"
+parent="${prefix}${link_2}" child="${prefix}${link_3}" joint_axis_xyz="${joint_3_axis_xyz}" joint_origin_xyz="${joint_3_origin_xyz}" joint_origin_rpy="${joint_3_origin_rpy}" joint_lower_limit="${joint_3_lower_limit}" joint_upper_limit="${joint_3_upper_limit}"/>
+        <xacro:jaco_link link_name="${prefix}${link_4}" mesh_name="${link_4}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_4}" type="continuous"
+parent="${prefix}${link_3}" child="${prefix}${link_4}" joint_axis_xyz="${joint_4_axis_xyz}" joint_origin_xyz="${joint_4_origin_xyz}" joint_origin_rpy="${joint_4_origin_rpy}" joint_lower_limit="${joint_4_lower_limit}" joint_upper_limit="${joint_4_upper_limit}"/>
+        <xacro:jaco_link link_name="${prefix}${link_5}" mesh_name="${link_5}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_5}" type="continuous"
+parent="${prefix}${link_4}" child="${prefix}${link_5}" joint_axis_xyz="${joint_5_axis_xyz}" joint_origin_xyz="${joint_5_origin_xyz}" joint_origin_rpy="${joint_5_origin_rpy}" joint_lower_limit="${joint_5_lower_limit}" joint_upper_limit="${joint_5_upper_limit}"/>
+        <xacro:jaco_link link_name="${prefix}${link_hand}" mesh_name="${link_hand}" />
+        <xacro:jaco_joint joint_name="${prefix}${joint_6}" type="continuous"
+parent="${prefix}${link_5}" child="${prefix}${link_hand}" joint_axis_xyz="${joint_6_axis_xyz}" joint_origin_xyz="${joint_6_origin_xyz}" joint_origin_rpy="${joint_6_origin_rpy}" joint_lower_limit="${joint_6_lower_limit}" joint_upper_limit="${joint_6_upper_limit}"/>
 
-       <joint name="${link_base}_to_api_origin" type="fixed">
-         <parent link="${link_base}"/>
-         <child link="${api_origin}"/>
+       <joint name="${prefix}${link_base}_to_api_origin" type="fixed">
+         <parent link="${prefix}${link_base}"/>
+         <child link="${prefix}${api_origin}"/>
          <origin xyz="0 0 ${api_offset}" rpy="0 0 0" />
        </joint>
-       <link name="${api_origin}">
+       <link name="${prefix}${api_origin}">
          <!--
          <visual>
            <geometry>
@@ -94,12 +101,12 @@
          -->
         </link>
 
-        <joint name="${link_hand}_to_end_effector" type="fixed">
-          <parent link="${link_hand}"/>
-          <child link="${link_end_effector}"/>
+        <joint name="${prefix}${link_hand}_to_end_effector" type="fixed">
+          <parent link="${prefix}${link_hand}"/>
+          <child link="${prefix}${link_end_effector}"/>
           <origin xyz="0 0 -${end_effector_offset}" rpy="0 ${J_PI} 0" />
         </joint>
-        <link name="${link_end_effector}" />
+        <link name="${prefix}${link_end_effector}" />
 
     </xacro:macro>
 
