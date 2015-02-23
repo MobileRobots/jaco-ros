@@ -14,15 +14,16 @@ import geometry_msgs.msg
 
 import goal_generators
 
+armtype = str(sys.argv[1])
 
 def cartesian_pose_client(position, orientation):
     """Send a cartesian goal to the action server."""
-    action_address = '/' + str(sys.argv[1]) + '_arm_driver/arm_pose/arm_pose'
+    action_address = '/' + armtype + '_arm_driver/arm_pose/arm_pose'
     client = actionlib.SimpleActionClient(action_address, kinova_msgs.msg.ArmPoseAction)
     client.wait_for_server()
 
     goal = kinova_msgs.msg.ArmPoseGoal()
-    goal.pose.header = std_msgs.msg.Header(frame_id=(str(sys.argv[1]) + '_api_origin'))
+    goal.pose.header = std_msgs.msg.Header(frame_id=(armtype + '_api_origin'))
     goal.pose.pose.position = geometry_msgs.msg.Point(
         x=position[0], y=position[1], z=position[2])
     goal.pose.pose.orientation = geometry_msgs.msg.Quaternion(
@@ -44,10 +45,11 @@ if __name__ == '__main__':
         print('    cartesian_workout.py node_name random num          - randomly generate num poses')
         print('    cartesian_workout.py node_name file_path           - use poses from file')
         print('    cartesian_workout.py node_name x y z qx qy qz qw   - use that specific pose')
+        print('where node_name is: jaco, mico or jaco2')
         exit()
 
     try:
-        rospy.init_node(str(sys.argv[1]) + '_cartesian_workout')
+        rospy.init_node(armtype + '_cartesian_workout')
 
         if str(sys.argv[2]) == 'random' and len(sys.argv) == 4:
             print('Using {} randomly generated poses'.format(int(sys.argv[3])))
