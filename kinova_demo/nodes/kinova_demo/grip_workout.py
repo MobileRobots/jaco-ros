@@ -11,10 +11,11 @@ import kinova_msgs.msg
 
 import goal_generators
 
+armtype = str(sys.argv[1])
 
 def gripper_client(finger_positions):
     """Send a gripper goal to the action server."""
-    action_address = '/' + str(sys.argv[1]) + '_arm_driver/fingers/finger_positions'
+    action_address = '/' + armtype + '_arm_driver/fingers/finger_positions'
     client = actionlib.SimpleActionClient(action_address,
                                           kinova_msgs.msg.SetFingersPositionAction)
     client.wait_for_server()
@@ -41,28 +42,28 @@ def gripper_client(finger_positions):
 if __name__ == '__main__':
     if (len(sys.argv) not in [4, 5] or
             'help' in str(sys.argv) or
-            str(sys.argv[1]) not in ['jaco', 'mico']):
+            armtype not in ['jaco', 'mico', 'jaco2']):
 
         print('Usage:')
-        print('    grip_workout.py jaco random num   - randomly generate num poses')
-        print('    grip_workout.py jaco f1 f2 f3     - use that specific pose')
-        print('    grip_workout.py mico f1 f2        - use that specific pose')
+        print('    grip_workout.py <armtype> random <num>   - randomly generate num poses')
+        print('    grip_workout.py <armtype> <f1> <f2> [f3]     - use that specific pose')
+        print('where <armtype> is one of: jaco, jaco2, mico.  Only give two finger positions for mico.')
         exit()
 
     try:
-        rospy.init_node(str(sys.argv[1]) + '_gripper_workout')
+        rospy.init_node(armtype + '_gripper_workout')
 
         if str(sys.argv[2]) == 'random' and len(sys.argv) == 4:
             print('Using {} randomly generated finger positions'.format(int(sys.argv[3])))
-            if str(sys.argv[1]) == 'jaco':
+            if armtype == 'jaco' or armtype == 'jaco2':
                 positions = goal_generators.random_jaco_finger_positions(int(sys.argv[3]))
             else:
                 positions = goal_generators.random_mico_finger_positions(int(sys.argv[3]))
-        elif str(sys.argv[1]) == 'jaco' and len(sys.argv) == 5:
+        elif (armtype == 'jaco' or armtype == 'jaco2') and len(sys.argv) == 5:
             print('Using the specified JACO finger positions:')
             raw_positions = [float(n) for n in sys.argv[2:]]
             positions = [raw_positions]
-        elif str(sys.argv[1]) == 'mico' and len(sys.argv) == 4:
+        elif armtype == 'mico' and len(sys.argv) == 4:
             print('Using the specified MICO finger positions:')
             raw_positions = [float(n) for n in sys.argv[2:]]
             positions = [raw_positions]

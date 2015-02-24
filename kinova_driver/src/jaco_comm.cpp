@@ -87,46 +87,85 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
         throw JacoCommException("Could not get devices list", result);
     }
 
+    ROS_INFO("Found %d devices:", devices_list.size());
+    if(serial_number == "")
+    ROS_INFO("Choosing first arm, no serial number requested.");
+    else
+        ROS_INFO("Searching for arm with serial number \"%s\"...", serial_number.c_str());
     bool found_arm = false;
     for (int device_i = 0; device_i < devices_list.size(); device_i++)
     {
-        // If no device is specified, just use the first available device
+          char *sn = devices_list[device_i].SerialNumber;
+        ROS_INFO("\tDevice index %d: serial number \"%s\"", device_i, sn);
+        const size_t snl = strlen(sn);
+            if(snl > 0 && sn[snl-1] == ' ')
+                sn[snl-1] = '\0';
+
+        // If no serial_number, just use the first available device. Otherwise use device if it matches.
         if ((serial_number == "")
             || (std::strcmp(serial_number.c_str(), devices_list[device_i].SerialNumber) == 0))
         {
+            ROS_INFO("Choosing this arm...");
             result = jaco_api_.setActiveDevice(devices_list[device_i]);
             if (result != NO_ERROR_KINOVA)
             {
                 throw JacoCommException("Could not set the active device", result);
             }
 
-            GeneralInformations general_info;
-            result = jaco_api_.getGeneralInformations(general_info);
-            if (result != NO_ERROR_KINOVA)
+            std::string code_ver = "?";
+            std::string code_rev = "?";
             {
-                throw JacoCommException("Could not get general information about the device", result);
+                GeneralInformations general_info;
+                result = jaco_api_.getGeneralInformations(general_info);
+                if (result == NO_ERROR_KINOVA)
+                {
+                    code_ver = general_info.CodeVersion;
+                    code_rev = general_info.CodeRevision;
+                }
+                else
+                {
+                    ROS_WARN("Could not get general information about the device: %d", result);
+                }
             }
 
-            ClientConfigurations configuration;
-            getConfig(configuration);
+            std::string modeldesc("unknown");
+            try {
+puts("client config...");
+              ClientConfigurations configuration;
+              getConfig(configuration);
+              modeldesc = configuration.Model;
+            } catch(JacoCommException& e) {
+puts("except client config...");
+              ROS_WARN("Could not get client configuration information about the device: %s", e.what());
+            }
 
-            QuickStatus quick_status;
-            getQuickStatus(quick_status);
-
-            robot_type_ = quick_status.RobotType;
+            try {
+puts("quick status...");
+                QuickStatus quick_status;
+                getQuickStatus(quick_status);
+                  robot_type_ = quick_status.RobotType;
+            } catch(JacoCommException& e) {
+                ROS_WARN("Could not get quick status. Will guess that arm is JACO2. %s", e.what());
+                robot_type_ = 3;
+           }
+        
             if ((robot_type_ != 0) && (robot_type_ != 1) && (robot_type_ != 3))
             {
                 ROS_ERROR("Could not get the type of the arm from the quick status, expected "
-                          "either type 0 (JACO), or type 1 (MICO), got %d", quick_status.RobotType);
-                throw JacoCommException("Could not get the type of the arm", quick_status.RobotType);
+                  "either type 0 (JACO), or type 1 (MICO), got %d", robot_type_);
+                throw JacoCommException("Could not get the type of the arm", robot_type_);
             }
 
+            std::string typedesc("unknown");
             switch (robot_type_) {
                 case 0:
+                    typedesc = "jaco";
                 case 3:
+                    typedesc = "jaco2";
                     num_fingers_ = 3;
                     break;
                 case 1:
+                    typedesc = "mico";
                     num_fingers_ = 2;
                     break;
                 default:
@@ -134,10 +173,11 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
             }
 
             ROS_INFO_STREAM("Found " << devices_list.size() << " device(s), using device at index " << device_i
-                            << " (model: " << configuration.Model
+                            << " (model: " << modeldesc
+                            << ", type: " << typedesc
                             << ", serial number: " << devices_list[device_i].SerialNumber
-                            << ", code version: " << general_info.CodeVersion
-                            << ", code revision: " << general_info.CodeRevision << ")");
+                            << ", code version: " << code_ver
+                            << ", code revision: " << code_rev << ")");
 
             found_arm = true;
             break;
@@ -680,10 +720,13 @@ void JacoComm::stopForceControl()
  */
 void JacoComm::getConfig(ClientConfigurations &config)
 {
+puts("lock");
     boost::recursive_mutex::scoped_lock lock(api_mutex_);
+puts("unlocked");
     memset(&config, 0, sizeof(config));  // zero structure
-
+puts("jaco api...");
     int result = jaco_api_.getClientConfigurations(config);
+puts("jaco api returned");
     if (result != NO_ERROR_KINOVA)
     {
         throw JacoCommException("Could not get client configuration", result);
