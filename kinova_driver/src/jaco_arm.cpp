@@ -137,8 +137,18 @@ bool JacoArm::homeArmServiceCallback(kinova_msgs::HomeArm::Request &req, kinova_
 
 void JacoArm::jointVelocityCallback(const kinova_msgs::JointVelocityConstPtr& joint_vel)
 {
+    /*printf("joint_velocity %0.2f %.2f %.2f %.2f %.2f %.2f\n",
+	joint_vel->joint1,
+	joint_vel->joint2,
+	joint_vel->joint3,
+	joint_vel->joint4,
+	joint_vel->joint5,
+	joint_vel->joint6
+    );*/
+
     if (!jaco_comm_.isStopped())
     {
+	//puts("not stopped. setting velocity values.");
         joint_velocities_.Actuator1 = joint_vel->joint1;
         joint_velocities_.Actuator2 = joint_vel->joint2;
         joint_velocities_.Actuator3 = joint_vel->joint3;

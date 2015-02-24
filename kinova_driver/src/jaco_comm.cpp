@@ -89,17 +89,17 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
 
     ROS_INFO("Found %d devices:", devices_list.size());
     if(serial_number == "")
-    ROS_INFO("Choosing first arm, no serial number requested.");
+        ROS_INFO("Choosing first arm, no serial number requested.");
     else
         ROS_INFO("Searching for arm with serial number \"%s\"...", serial_number.c_str());
     bool found_arm = false;
     for (int device_i = 0; device_i < devices_list.size(); device_i++)
     {
-          char *sn = devices_list[device_i].SerialNumber;
+        char *sn = devices_list[device_i].SerialNumber;
         ROS_INFO("\tDevice index %d: serial number \"%s\"", device_i, sn);
         const size_t snl = strlen(sn);
-            if(snl > 0 && sn[snl-1] == ' ')
-                sn[snl-1] = '\0';
+        if(snl > 0 && sn[snl-1] == ' ')
+           sn[snl-1] = '\0';
 
         // If no serial_number, just use the first available device. Otherwise use device if it matches.
         if ((serial_number == "")
@@ -494,6 +494,15 @@ void JacoComm::setJointVelocities(const AngularInfo &joint_vel)
     jaco_velocity.Position.Actuators = joint_vel;
 
     int result = jaco_api_.sendAdvanceTrajectory(jaco_velocity);
+    /*printf("basic traj %.2f %.2f %.2f %.2f %.2f %.2f\n",
+	jaco_velocity.Position.Actuators.Actuator1,
+	jaco_velocity.Position.Actuators.Actuator2,
+	jaco_velocity.Position.Actuators.Actuator3,
+	jaco_velocity.Position.Actuators.Actuator4,
+	jaco_velocity.Position.Actuators.Actuator5,
+	jaco_velocity.Position.Actuators.Actuator6);
+    int result = jaco_api_.sendBasicTrajectory(jaco_velocity);
+    */
     if (result != NO_ERROR_KINOVA)
     {
         throw JacoCommException("Could not send advanced joint velocity trajectory", result);
