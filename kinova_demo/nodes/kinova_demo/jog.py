@@ -110,7 +110,7 @@ def choose_canned_state():
   print '3: right arm ready towards middle from side'
   print '4: left arm stretch'
   print '5: right arm stretch'
-  print '6: stow in front'
+  print '6: down in front'
   k = sys.stdin.read(1)
   if k == '1':
       send_joint_angles([-1.692, -0.551, -0.073, -1.579, 3.057, 2.515])
@@ -123,7 +123,7 @@ def choose_canned_state():
   elif k == '5':
       send_joint_angles([-3.043, -0.127, -1.337, -0.953, 1.092, 3.551])
   elif k == '6': 
-      send_joint_angles([-1.515, 0.664, -0.338, -3.133, -2.036, 0.285])
+      send_joint_angles([-1.690, 0.590, -0.570, -1.578, 3.055, 0.153])
   else:  
     return
 
