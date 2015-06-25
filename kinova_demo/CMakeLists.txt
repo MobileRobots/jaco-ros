@@ -55,5 +55,6 @@ install(PROGRAMS
   nodes/kinova_demo/cartesian_workout.py
   nodes/kinova_demo/grip_workout.py
   nodes/kinova_demo/joint_angle_workout.py
+  nodes/kinova_demo/jog.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

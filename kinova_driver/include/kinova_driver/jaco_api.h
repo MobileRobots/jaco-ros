@@ -28,7 +28,7 @@ class JacoAPI
 {
  public:
     JacoAPI(void);
-
+    bool load(const char *kinovaAPILibrary = JACO_USB_LIBRARY);
     int (*initAPI)(void);
     int (*closeAPI)(void);
     int (*getAPIVersion)(std::vector<int> &);

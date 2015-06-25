@@ -63,6 +63,16 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
     std::string serial_number = "";
     node_handle.getParam("serial_number", serial_number);
 
+    std::string apiLib = JACO_USB_LIBRARY;
+    node_handle.getParam("load_library", apiLib);
+
+    if(!jaco_api_.load(apiLib.c_str()))
+    {
+      throw std::runtime_error("Error loading API library.");
+    }
+      
+
+puts("getapi");
     std::vector<int> api_version;
     int result = jaco_api_.getAPIVersion(api_version);
     if (result != NO_ERROR_KINOVA)
@@ -87,7 +97,7 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
         throw JacoCommException("Could not get devices list", result);
     }
 
-    ROS_INFO("Found %d devices:", devices_list.size());
+    ROS_INFO("Found %ld devices:", devices_list.size());
     if(serial_number == "")
         ROS_INFO("Choosing first arm, no serial number requested.");
     else

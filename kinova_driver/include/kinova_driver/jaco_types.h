@@ -58,7 +58,9 @@
 namespace kinova
 {
 
-class JacoException : public std::exception {};
+class JacoException : public std::exception 
+{
+};
 
 
 class JacoCommException : public JacoException

@@ -16,17 +16,28 @@ namespace kinova
 void* checkApiInit(void * usbLib, const char* name)
 {
     void * function_pointer = dlsym(usbLib, name);
-    assert(function_pointer != NULL);
+    if(function_pointer == NULL)
+    {
+      ROS_ERROR("Error loading function %s from API library.", name);
+      throw std::runtime_error("Error loading functions from API library");
+    }
+    //assert(function_pointer != NULL);
     return function_pointer;
 }
 
 
 JacoAPI::JacoAPI(void)
 {
-    void *usbLib = dlopen(JACO_USB_LIBRARY, RTLD_NOW | RTLD_GLOBAL);
+}
+
+bool JacoAPI::load(const char *kinovaAPILibrary)
+{
+    ROS_INFO("Loading Kinova API library: %s", kinovaAPILibrary);
+    void *usbLib = dlopen(kinovaAPILibrary, RTLD_NOW | RTLD_GLOBAL);
     if (usbLib == NULL)
     {
         ROS_WARN("%s", dlerror());
+        return false;
     }
 
     initAPI = (int (*)())checkApiInit(usbLib, "InitAPI");
@@ -81,9 +92,9 @@ JacoAPI::JacoAPI(void)
 
     initFingers = (int (*)())checkApiInit(usbLib, "InitFingers");
 
-    restoreFactoryDefault = (int (*)())checkApiInit(usbLib, "RestoreFactoryDefault");
+    //restoreFactoryDefault = (int (*)())checkApiInit(usbLib, "RestoreFactoryDefault");
 
-    sendJoystickCommand = (int (*)(JoystickCommand))checkApiInit(usbLib, "SendJoystickCommand");
+    //sendJoystickCommand = (int (*)(JoystickCommand))checkApiInit(usbLib, "SendJoystickCommand");
 
     sendAdvanceTrajectory = (int (*)(TrajectoryPoint))checkApiInit(usbLib, "SendAdvanceTrajectory");
 
@@ -99,9 +110,11 @@ JacoAPI::JacoAPI(void)
 
     eraseAllTrajectories = (int (*)())checkApiInit(usbLib, "EraseAllTrajectories");
 
-    getPositionCurrentActuators = (int (*)(std::vector<float> &))checkApiInit(usbLib, "GetPositionCurrentActuators");
+    //getPositionCurrentActuators = (int (*)(std::vector<float> &))checkApiInit(usbLib, "GetPositionCurrentActuators");
 
-    setActuatorPID = (int (*)(unsigned int, float, float, float))checkApiInit(usbLib, "SetActuatorPID");
+    //setActuatorPID = (int (*)(unsigned int, float, float, float))checkApiInit(usbLib, "SetActuatorPID");
+
+    return true;
 }
 
 }  // namespace kinova
