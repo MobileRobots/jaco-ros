@@ -62,9 +62,11 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
     // Get the serial number parameter for the arm we wish to connec to
     std::string serial_number = "";
     node_handle.getParam("serial_number", serial_number);
+printf("serial_number=%s\n", serial_number.c_str());
 
     std::string apiLib = JACO_USB_LIBRARY;
     node_handle.getParam("load_library", apiLib);
+printf("apiLib=%s\n", apiLib.c_str());
 
     if(!jaco_api_.load(apiLib.c_str()))
     {
@@ -139,17 +141,14 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
 
             std::string modeldesc("unknown");
             try {
-puts("client config...");
               ClientConfigurations configuration;
               getConfig(configuration);
               modeldesc = configuration.Model;
             } catch(JacoCommException& e) {
-puts("except client config...");
               ROS_WARN("Could not get client configuration information about the device: %s", e.what());
             }
 
             try {
-puts("quick status...");
                 QuickStatus quick_status;
                 getQuickStatus(quick_status);
                   robot_type_ = quick_status.RobotType;
@@ -738,13 +737,9 @@ void JacoComm::stopForceControl()
  */
 void JacoComm::getConfig(ClientConfigurations &config)
 {
-puts("lock");
     boost::recursive_mutex::scoped_lock lock(api_mutex_);
-puts("unlocked");
     memset(&config, 0, sizeof(config));  // zero structure
-puts("jaco api...");
     int result = jaco_api_.getClientConfigurations(config);
-puts("jaco api returned");
     if (result != NO_ERROR_KINOVA)
     {
         throw JacoCommException("Could not get client configuration", result);
