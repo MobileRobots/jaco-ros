@@ -72,7 +72,6 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
     }
       
 
-puts("getapi");
     std::vector<int> api_version;
     int result = jaco_api_.getAPIVersion(api_version);
     if (result != NO_ERROR_KINOVA)
