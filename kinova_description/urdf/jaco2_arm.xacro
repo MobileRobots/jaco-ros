@@ -64,14 +64,14 @@
   <property name="joint_4_lower_limit" value="${-2*J_PI}" />
   <property name="joint_4_upper_limit" value="${2*J_PI}" />
 
-  <property name="joint_5" value="jaco_joint_5" />
+  <property name="joint_5" value="jaco2_joint_5" />
   <property name="joint_5_axis_xyz" value="0 0 -1" />
   <property name="joint_5_origin_xyz" value="0.03700 0 -0.06408" />
   <property name="joint_5_origin_rpy" value="0 -${J_PI/180*60} 0" />
   <property name="joint_5_lower_limit" value="${-2*J_PI}" />
   <property name="joint_5_upper_limit" value="${2*J_PI}" />
 
-  <property name="joint_6" value="jaco_joint_6" />
+  <property name="joint_6" value="jaco2_joint_6" />
   <property name="joint_6_axis_xyz" value="0 0 -1" />
   <property name="joint_6_origin_xyz" value="0.03700 0 -0.06408" />
   <property name="joint_6_origin_rpy" value="-${J_PI/180*60} 0 ${J_PI/2}" />
