@@ -59,14 +59,15 @@ JacoComm::JacoComm(const ros::NodeHandle& node_handle,
 {
     boost::recursive_mutex::scoped_lock lock(api_mutex_);
 
+    ROS_DEBUG("JacoComm: jaco arm node namespace=%s", node_handle.getNamespace().c_str());
+    nodename = node_handle.getNamespace();
+
     // Get the serial number parameter for the arm we wish to connec to
     std::string serial_number = "";
     node_handle.getParam("serial_number", serial_number);
-printf("serial_number=%s\n", serial_number.c_str());
 
     std::string apiLib = JACO_USB_LIBRARY;
     node_handle.getParam("load_library", apiLib);
-printf("apiLib=%s\n", apiLib.c_str());
 
     if(!jaco_api_.load(apiLib.c_str()))
     {
@@ -81,7 +82,7 @@ printf("apiLib=%s\n", apiLib.c_str());
         throw JacoCommException("Could not get the Kinova API version", result);
     }
 
-    ROS_INFO_STREAM("Initializing Kinova API (header version: " << COMMAND_LAYER_VERSION << ", library version: "
+    ROS_INFO_STREAM(nodename << ": " << "Initializing Kinova API (header version: " << COMMAND_LAYER_VERSION << ", library version: "
                     << api_version[0] << "." << api_version[1] << "." << api_version[2] << ")");
 
     result = jaco_api_.initAPI();
@@ -98,16 +99,16 @@ printf("apiLib=%s\n", apiLib.c_str());
         throw JacoCommException("Could not get devices list", result);
     }
 
-    ROS_INFO("Found %ld devices:", devices_list.size());
+    ROS_INFO("%s: Found %ld devices:", nodename.c_str(), devices_list.size());
     if(serial_number == "")
-        ROS_INFO("Choosing first arm, no serial number requested.");
+        ROS_INFO("%s: Choosing first arm, no serial number requested.", nodename.c_str());
     else
-        ROS_INFO("Searching for arm with serial number \"%s\"...", serial_number.c_str());
+        ROS_INFO("%s: Searching for arm with serial number \"%s\"...", nodename.c_str(), serial_number.c_str());
     bool found_arm = false;
     for (int device_i = 0; device_i < devices_list.size(); device_i++)
     {
         char *sn = devices_list[device_i].SerialNumber;
-        ROS_INFO("\tDevice index %d: serial number \"%s\"", device_i, sn);
+        ROS_INFO("%s: \tDevice index %d: serial number \"%s\"", nodename.c_str(), device_i, sn);
         const size_t snl = strlen(sn);
         if(snl > 0 && sn[snl-1] == ' ')
            sn[snl-1] = '\0';
@@ -116,7 +117,7 @@ printf("apiLib=%s\n", apiLib.c_str());
         if ((serial_number == "")
             || (std::strcmp(serial_number.c_str(), devices_list[device_i].SerialNumber) == 0))
         {
-            ROS_INFO("Choosing this arm...");
+            ROS_INFO("%s: Choosing this arm...", nodename.c_str());
             result = jaco_api_.setActiveDevice(devices_list[device_i]);
             if (result != NO_ERROR_KINOVA)
             {
@@ -135,7 +136,7 @@ printf("apiLib=%s\n", apiLib.c_str());
                 }
                 else
                 {
-                    ROS_WARN("Could not get general information about the device: %d", result);
+                    ROS_WARN("%s: Could not get general information about the device: %d", nodename.c_str(), result);
                 }
             }
 
@@ -145,7 +146,7 @@ printf("apiLib=%s\n", apiLib.c_str());
               getConfig(configuration);
               modeldesc = configuration.Model;
             } catch(JacoCommException& e) {
-              ROS_WARN("Could not get client configuration information about the device: %s", e.what());
+              ROS_WARN("%s: Could not get client configuration information about the device: %s", nodename.c_str(), e.what());
             }
 
             try {
@@ -153,14 +154,15 @@ printf("apiLib=%s\n", apiLib.c_str());
                 getQuickStatus(quick_status);
                   robot_type_ = quick_status.RobotType;
             } catch(JacoCommException& e) {
-                ROS_WARN("Could not get quick status. Will guess that arm is JACO2. %s", e.what());
+                ROS_WARN("%s: Could not get quick status. Will guess that arm is JACO2. %s", nodename.c_str(), e.what());
                 robot_type_ = 3;
            }
         
             if ((robot_type_ != 0) && (robot_type_ != 1) && (robot_type_ != 3))
             {
-                ROS_ERROR("Could not get the type of the arm from the quick status, expected "
-                  "either type 0 (JACO), or type 1 (MICO), got %d", robot_type_);
+                ROS_ERROR("%s: Could not get the type of the arm from the quick status, expected "
+                  "either type 0 (JACO), or type 1 (MICO), got %d",
+                  nodename.c_str(), robot_type_);
                 throw JacoCommException("Could not get the type of the arm", robot_type_);
             }
 
@@ -180,7 +182,7 @@ printf("apiLib=%s\n", apiLib.c_str());
                     break;
             }
 
-            ROS_INFO_STREAM("Found " << devices_list.size() << " device(s), using device at index " << device_i
+            ROS_INFO_STREAM(nodename << ": " << "Found " << devices_list.size() << " device(s), using device at index " << device_i
                             << " (model: " << modeldesc
                             << ", type: " << typedesc
                             << ", serial number: " << devices_list[device_i].SerialNumber
@@ -194,8 +196,8 @@ printf("apiLib=%s\n", apiLib.c_str());
 
     if (!found_arm)
     {
-        ROS_ERROR("Could not find the specified arm (serial: %s) among the %d attached devices",
-                  serial_number.c_str(), static_cast<int>(devices_list.size()));
+        ROS_ERROR("%s: Could not find the specified arm (serial: %s) among the %d attached devices", 
+                  nodename.c_str(), serial_number.c_str(), static_cast<int>(devices_list.size()));
         throw JacoCommException("Could not find the specified arm", 0);
     }
 
@@ -216,8 +218,8 @@ printf("apiLib=%s\n", apiLib.c_str());
     }
     else
     {
-        ROS_WARN("Movement on connection to the arm has been suppressed on initialization. You may "
-                 "have to home the arm (through the home service) before movement is possible");
+        ROS_WARN("%s: Movement on connection to the arm has been suppressed on initialization. You may "
+                 "have to home the arm (through the home service) before movement is possible", nodename.c_str());
     }
 }
 
@@ -267,12 +269,12 @@ void JacoComm::homeArm(void)
 
     if (isStopped())
     {
-        ROS_INFO("Arm is stopped, cannot home");
+        ROS_INFO("%s: Arm is stopped, cannot home", nodename.c_str());
         return;
     }
     else if (isHomed())
     {
-        ROS_INFO("Arm is already in \"home\" position");
+        ROS_INFO("%s: Arm is already in \"home\" position", nodename.c_str());
         return;
     }
 
@@ -280,7 +282,7 @@ void JacoComm::homeArm(void)
     ros::Duration(1.0).sleep();
     startAPI();
 
-    ROS_INFO("Homing the arm");
+    ROS_INFO("%s: Homing the arm", nodename.c_str());
     int result = jaco_api_.moveHome();
     if (result != NO_ERROR_KINOVA)
     {
@@ -297,7 +299,7 @@ void JacoComm::homeArm(void)
  */
 void JacoComm::initFingers(void)
 {
-    ROS_INFO("Initializing fingers...this will take a few seconds and the fingers should open completely");
+    ROS_INFO("%s: Initializing fingers...this will take a few seconds and the fingers should open completely", nodename.c_str());
     boost::recursive_mutex::scoped_lock lock(api_mutex_);
     int result = jaco_api_.initFingers();
     if (result != NO_ERROR_KINOVA)
@@ -319,7 +321,7 @@ void JacoComm::setJointAngles(const JacoAngles &angles, int timeout, bool push)
 
     if (isStopped())
     {
-        ROS_INFO("The angles could not be set because the arm is stopped");
+        ROS_INFO("%s: The angles could not be set because the arm is stopped", nodename.c_str());
         return;
     }
 
@@ -368,7 +370,7 @@ void JacoComm::setCartesianPosition(const JacoPose &position, int timeout, bool 
 
     if (isStopped())
     {
-        ROS_INFO("The position could not be set because the arm is stopped");
+        ROS_INFO("%s: The position could not be set because the arm is stopped", nodename.c_str());
         return;
     }
 
@@ -425,7 +427,7 @@ void JacoComm::setFingerPositions(const FingerAngles &fingers, int timeout, bool
 
     if (isStopped())
     {
-        ROS_INFO("The fingers could not be set because the arm is stopped");
+        ROS_INFO("%s: The fingers could not be set because the arm is stopped", nodename.c_str());
         return;
     }
 
@@ -486,7 +488,7 @@ void JacoComm::setJointVelocities(const AngularInfo &joint_vel)
 
     if (isStopped())
     {
-        ROS_INFO("The velocities could not be set because the arm is stopped");
+        ROS_INFO("%s: The velocities could not be set because the arm is stopped", nodename.c_str());
         return;
     }
 
@@ -527,7 +529,7 @@ void JacoComm::setCartesianVelocities(const CartesianInfo &velocities)
 
     if (isStopped())
     {
-        ROS_INFO("The cartesian velocities could not be set because the arm is stopped");
+        ROS_INFO("%s: The cartesian velocities could not be set because the arm is stopped", nodename.c_str());
         jaco_api_.eraseAllTrajectories();
         return;
     }
@@ -814,7 +816,7 @@ int JacoComm::robotType()
  */
 void JacoComm::printAngles(const JacoAngles &angles)
 {
-    ROS_INFO("Joint angles (deg) -- J1: %f, J2: %f J3: %f, J4: %f, J5: %f, J6: %f",
+    ROS_INFO("%s: Joint angles (deg) -- J1: %f, J2: %f J3: %f, J4: %f, J5: %f, J6: %f", nodename.c_str(),
              angles.Actuator1, angles.Actuator2, angles.Actuator3,
              angles.Actuator4, angles.Actuator5, angles.Actuator6);
 }
@@ -825,9 +827,10 @@ void JacoComm::printAngles(const JacoAngles &angles)
  */
 void JacoComm::printPosition(const JacoPose &position)
 {
-    ROS_INFO("Arm position\n"
+    ROS_INFO("%s: Arm position\n"
              "\tposition (m) -- x: %f, y: %f z: %f\n"
              "\trotation (rad) -- theta_x: %f, theta_y: %f, theta_z: %f",
+              nodename.c_str(),
              position.X, position.Y, position.Z,
              position.ThetaX, position.ThetaY, position.ThetaZ);
 }
@@ -838,7 +841,8 @@ void JacoComm::printPosition(const JacoPose &position)
  */
 void JacoComm::printFingers(const FingersPosition &fingers)
 {
-    ROS_INFO("Finger positions -- F1: %f, F2: %f, F3: %f",
+    ROS_INFO("%s: Finger positions -- F1: %f, F2: %f, F3: %f",
+             nodename.c_str(),
              fingers.Finger1, fingers.Finger2, fingers.Finger3);
 }
 
@@ -848,7 +852,7 @@ void JacoComm::printFingers(const FingersPosition &fingers)
  */
 void JacoComm::printConfig(const ClientConfigurations &config)
 {
-    ROS_INFO_STREAM("Arm configuration:\n"
+    ROS_INFO_STREAM(nodename << ": " << "Arm configuration:\n"
                     "\tClientID: " << config.ClientID <<
                     "\n\tClientName: " << config.ClientName <<
                     "\n\tOrganization: " << config.Organization <<
